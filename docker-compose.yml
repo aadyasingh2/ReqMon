@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ramma_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ramma_user
+      POSTGRES_PASSWORD: ramma_password
+      POSTGRES_DB: rammadb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ramma_user -d rammadb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: ramma_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://ramma_user:ramma_password@db:5432/rammadb
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_api_key_here}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

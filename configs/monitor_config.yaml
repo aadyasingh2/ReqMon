@@ -1,0 +1,8 @@
+# Generated RAMMA Monitor Configuration
+metric: "recall"
+operator: ">="
+business_requirement_threshold: 0.93
+operational_baseline_threshold: 0.9248
+requirement_met_by_baseline: True
+severity: "high"
+raw_requirement: "Recall must remain above 93%"

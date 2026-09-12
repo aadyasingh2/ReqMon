@@ -1,0 +1,31 @@
+requirement_text,expected_metric,expected_operator,expected_threshold,expected_is_ambiguous,predicted_metric,predicted_operator,predicted_threshold,predicted_is_ambiguous,correct
+Fraud recall must remain above 95%,recall,>=,0.95,False,recall,>=,0.95,False,True
+False positive rate on valid transactions must stay below 2%,fpr,<=,0.02,False,fpr,<=,0.02,True,False
+Fraud detection model should catch most fraudulent transactions,recall,>=,0.0,True,accuracy,>=,0.0,True,True
+Precision for high-risk customer churn predictions must be at least 85%,precision,>=,0.85,False,precision,>=,0.85,False,True
+F1 score for churn alerts must be greater than 0.80,f1,>,0.8,False,f1,>,0.8,False,True
+Churn intervention model should be reasonably accurate,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+Credit default prediction accuracy must equal 90%,accuracy,==,0.9,False,accuracy,==,0.9,False,True
+AUC for credit scoring model must be strictly higher than 0.75,auc,>,0.75,False,auc,>,0.75,False,True
+False negative rate on credit applications must not exceed 5%,fnr,<=,0.05,False,fnr,<=,0.05,False,True
+The model should minimize risk fairly across all demographic groups,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+Credit card fraud precision must be at least 92%,precision,>=,0.92,False,precision,>=,0.92,False,True
+F1 score for transaction fraud alerts must exceed 0.88,f1,>,0.88,False,f1,>=,0.88,False,False
+Customer churn recall must stay above 80%,recall,>=,0.8,False,recall,>=,0.8,False,True
+False negative rate for high-value churn must not exceed 4%,fnr,<=,0.04,False,fnr,<=,0.04,False,True
+Overall churn model accuracy must equal 91%,accuracy,==,0.91,False,accuracy,==,0.91,False,True
+AUC score for loan default classifier must be greater than 0.82,auc,>,0.82,False,auc,>,0.82,False,True
+False positive rate for credit card denial must remain below 3%,fpr,<=,0.03,False,fpr,>=,0.03,True,False
+Precision for credit risk scorecard must be at least 87%,precision,>=,0.87,False,precision,>=,0.87,False,True
+Fraud detection model must deliver good performance under high load,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+System should maintain reliable predictions for suspicious transactions,recall,>=,0.0,True,accuracy,>=,0.0,True,True
+Churn prediction algorithm should produce fair results across all customer segments,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+The churn model should be fast and accurate,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+Credit risk scoring needs to be trustworthy and transparent,auc,>=,0.0,True,accuracy,>=,0.0,True,True
+Loan application evaluation should minimize overall errors,accuracy,>=,0.0,True,accuracy,>=,0.0,True,True
+The default model performance must remain satisfactory,f1,>=,0.0,True,accuracy,>=,0.0,True,True
+Precision should be around 85% for transaction monitoring,precision,==,0.85,True,precision,>=,0.85,True,True
+Model recall must be high enough to catch most churners,recall,>=,0.0,True,recall,>=,0.0,True,True
+AUC must remain strictly above 0.70 during quarter 3,auc,>,0.7,False,auc,>=,0.7,False,False
+False positive rate on premium users should be low,fpr,<=,0.05,True,fpr,>=,0.0,True,True
+Accuracy needs to be greater than 88% overall,accuracy,>,0.88,False,accuracy,>,0.88,False,True

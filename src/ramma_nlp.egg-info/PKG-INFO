@@ -1,0 +1,70 @@
+Metadata-Version: 2.4
+Name: ramma-nlp
+Version: 0.1.0
+Summary: Service interpreting natural-language ML monitoring requirements
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.110.0
+Requires-Dist: uvicorn>=0.28.0
+Requires-Dist: pydantic>=2.6.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: google-generativeai>=0.8.0
+Requires-Dist: pytest>=8.0.0
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: streamlit>=1.32.0
+Provides-Extra: dev
+Requires-Dist: httpx>=0.27.0; extra == "dev"
+
+# ramma-nlp
+
+RAMMA NLP Service interprets natural-language ML monitoring requirements into structured metrics, detects ambiguous requirements, checks metric violations, and ranks suspected drift contributors.
+
+## Project Structure
+
+```text
+.
+├── src/
+│   └── ramma_nlp/
+│       ├── __init__.py
+│       ├── schema.py
+│       ├── interpreter.py
+│       ├── explain.py
+│       └── contributors.py
+├── tests/
+├── data/
+├── scripts/
+├── app/
+├── pyproject.toml
+├── .env.example
+└── README.md
+```
+
+## Setup Instructions
+
+1. **Install Dependencies**:
+   ```bash
+   pip install -e .
+   ```
+
+2. **Configure Environment Variables**:
+   Copy `.env.example` to `.env` and set your API key:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set GEMINI_API_KEY
+   ```
+
+3. **Run FastAPI Server**:
+   ```bash
+   uvicorn ramma_nlp.interpreter:app --reload --port 8000
+   ```
+
+4. **Run Unit & Integration Tests**:
+   ```bash
+   pytest
+   ```
+
+5. **Run Streamlit Demo**:
+   ```bash
+   streamlit run app/demo.py
+   ```

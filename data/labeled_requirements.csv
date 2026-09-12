@@ -1,0 +1,31 @@
+requirement_text,expected_metric,expected_operator,expected_threshold,expected_is_ambiguous
+Fraud recall must remain above 95%,recall,>=,0.95,False
+False positive rate on valid transactions must stay below 2%,fpr,<=,0.02,False
+Fraud detection model should catch most fraudulent transactions,recall,>=,0.0,True
+Precision for high-risk customer churn predictions must be at least 85%,precision,>=,0.85,False
+F1 score for churn alerts must be greater than 0.80,f1,>,0.80,False
+Churn intervention model should be reasonably accurate,accuracy,>=,0.0,True
+Credit default prediction accuracy must equal 90%,accuracy,==,0.90,False
+AUC for credit scoring model must be strictly higher than 0.75,auc,>,0.75,False
+False negative rate on credit applications must not exceed 5%,fnr,<=,0.05,False
+The model should minimize risk fairly across all demographic groups,accuracy,>=,0.0,True
+Credit card fraud precision must be at least 92%,precision,>=,0.92,False
+F1 score for transaction fraud alerts must exceed 0.88,f1,>,0.88,False
+Customer churn recall must stay above 80%,recall,>=,0.80,False
+False negative rate for high-value churn must not exceed 4%,fnr,<=,0.04,False
+Overall churn model accuracy must equal 91%,accuracy,==,0.91,False
+AUC score for loan default classifier must be greater than 0.82,auc,>,0.82,False
+False positive rate for credit card denial must remain below 3%,fpr,<=,0.03,False
+Precision for credit risk scorecard must be at least 87%,precision,>=,0.87,False
+Fraud detection model must deliver good performance under high load,accuracy,>=,0.0,True
+System should maintain reliable predictions for suspicious transactions,recall,>=,0.0,True
+Churn prediction algorithm should produce fair results across all customer segments,accuracy,>=,0.0,True
+The churn model should be fast and accurate,accuracy,>=,0.0,True
+Credit risk scoring needs to be trustworthy and transparent,auc,>=,0.0,True
+Loan application evaluation should minimize overall errors,accuracy,>=,0.0,True
+The default model performance must remain satisfactory,f1,>=,0.0,True
+Precision should be around 85% for transaction monitoring,precision,==,0.85,True
+Model recall must be high enough to catch most churners,recall,>=,0.0,True
+AUC must remain strictly above 0.70 during quarter 3,auc,>,0.70,False
+False positive rate on premium users should be low,fpr,<=,0.05,True
+Accuracy needs to be greater than 88% overall,accuracy,>,0.88,False
