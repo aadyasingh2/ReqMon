@@ -13,10 +13,14 @@ from ramma_nlp.interpreter import interpret_requirement
 
 def run_evaluation(
     csv_path: str = "data/labeled_requirements.csv",
-    output_path: str = "data/evaluation_results.csv",
+    output_path: str | None = None,
 ) -> pd.DataFrame:
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"Labeled requirements file not found at: {csv_path}")
+
+    if output_path is None:
+        filename = os.path.basename(csv_path)
+        output_path = os.path.join("data", f"eval_results_{filename}")
 
     df = pd.read_csv(csv_path)
 
@@ -36,9 +40,9 @@ def run_evaluation(
 
     for idx, row in df.iterrows():
         text = str(row["requirement_text"])
-        exp_metric = str(row["expected_metric"]).strip().lower()
-        exp_operator = str(row["expected_operator"]).strip()
-        exp_threshold = float(row["expected_threshold"])
+        exp_metric = str(row["expected_metric"]).strip().lower() if pd.notna(row.get("expected_metric")) else ""
+        exp_operator = str(row["expected_operator"]).strip() if pd.notna(row.get("expected_operator")) else ""
+        exp_threshold = float(row["expected_threshold"]) if pd.notna(row.get("expected_threshold")) else None
         exp_ambiguous = str(row["expected_is_ambiguous"]).strip().lower() == "true"
 
         try:
@@ -77,7 +81,7 @@ def run_evaluation(
                 (pred_ambiguous is False)
                 and (pred_metric == exp_metric)
                 and (pred_operator == exp_operator)
-                and (math.isclose(pred_threshold, exp_threshold, abs_tol=1e-3))
+                and (exp_threshold is not None and math.isclose(pred_threshold, exp_threshold, abs_tol=1e-3))
             )
 
         if is_correct:
@@ -95,16 +99,19 @@ def run_evaluation(
     ambiguity_precision = (tp / (tp + fp)) if (tp + fp) > 0 else 0.0
     ambiguity_recall = (tp / (tp + fn)) if (tp + fn) > 0 else 0.0
 
+    is_stress_test = "stress_test" in csv_path.lower()
+    accuracy_label = "Stress-Test Accuracy (Hand-Written, Unseen)" if is_stress_test else "Overall Accuracy"
+
     print("=" * 60)
-    print("REQUIREMENT INTERPRETER EVALUATION RESULTS")
+    print(f"REQUIREMENT INTERPRETER EVALUATION ({os.path.basename(csv_path)})")
     print("=" * 60)
     print(f"Total Evaluated Requirements: {total_rows}")
-    print(f"Overall Accuracy:            {accuracy:.2f}% ({correct_count}/{total_rows})")
-    print(f"Ambiguity Detection Precision: {ambiguity_precision:.2%}")
-    print(f"Ambiguity Detection Recall:    {ambiguity_recall:.2%}")
+    print(f"{accuracy_label:<40}: {accuracy:.2f}% ({correct_count}/{total_rows})")
+    print(f"Ambiguity Detection Precision:            {ambiguity_precision:.2%}")
+    print(f"Ambiguity Detection Recall:               {ambiguity_recall:.2%}")
     print("=" * 60)
 
-    # Save output CSV preserving existing rows
+    # Save output CSV
     df.to_csv(output_path, index=False)
     print(f"Results saved to: {output_path}\n")
 
@@ -112,4 +119,5 @@ def run_evaluation(
 
 
 if __name__ == "__main__":
-    run_evaluation()
+    target_csv = sys.argv[1] if len(sys.argv) > 1 else "data/labeled_requirements.csv"
+    run_evaluation(target_csv)

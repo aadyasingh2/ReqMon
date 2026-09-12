@@ -1,0 +1,11 @@
+requirement_text,expected_metric,expected_operator,expected_threshold,expected_is_ambiguous,predicted_metric,predicted_operator,predicted_threshold,predicted_is_ambiguous,correct
+Is my FNR less than 15 percent?,fnr,<,0.15,False,fnr,<,0.15,False,True
+Is my FNR more than 75 percent?,fnr,>,0.75,False,fnr,>,0.75,False,True
+Is my FNR low?,,,,True,fnr,>=,0.0,True,True
+Is my accuracy high enough?,,,,True,accuracy,>=,0.0,True,True
+What is my F1 score?,,,,True,f1,>=,0.0,True,True
+Is my recall greater than 85%?,recall,>,0.85,False,recall,>,0.85,False,True
+Is my precision good enough?,,,,True,precision,>=,0.0,True,True
+Is my precision greater than 90 percent?,precision,>,0.9,False,precision,>,0.9,False,True
+Is my accuracy greater than 95 percent?,accuracy,>,0.95,False,accuracy,>,0.95,False,True
+Recall needs to be above than 85 percent,recall,>,0.85,False,recall,>,0.85,False,True

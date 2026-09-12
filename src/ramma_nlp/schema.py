@@ -1,6 +1,6 @@
 """Schema definitions for RAMMA NLP requirement interpreter."""
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from ramma_nlp.metric_library import SUPPORTED_METRICS
 
 ALLOWED_METRICS = set(SUPPORTED_METRICS)
@@ -55,3 +55,14 @@ class InterpretedRequirement(BaseModel):
                 f"Invalid severity '{v}'. Severity must be one of: {sorted(ALLOWED_SEVERITIES)}"
             )
         return v_lower
+
+    @model_validator(mode="after")
+    def validate_non_ambiguous_threshold(self) -> "InterpretedRequirement":
+        if not self.is_ambiguous and self.threshold == 0.0:
+            text_lower = self.raw_requirement.lower() if self.raw_requirement else ""
+            if "0" not in text_lower and "zero" not in text_lower:
+                raise ValueError(
+                    f"Threshold silently defaulted to 0.0 for unambiguous requirement '{self.raw_requirement}'. "
+                    "Threshold extraction must extract a valid numerical value from the requirement text."
+                )
+        return self

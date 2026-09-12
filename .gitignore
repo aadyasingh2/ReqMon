@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases
+*.db
+ramma_local.db
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
