@@ -1,0 +1,6 @@
+requirement_text,expected_metric,expected_operator,expected_threshold,expected_is_ambiguous
+"Precision cannot dip under 70%.",precision,<,0.70,False
+"The F1 score should not drop beneath 0.75",f1,<,0.75,False
+"We need at least 92% recall on flagged transactions",recall,>=,0.92,False
+"AUC should never fall under 0.68",auc,<,0.68,False
+"Model accuracy has been trending nicely lately",,,,True

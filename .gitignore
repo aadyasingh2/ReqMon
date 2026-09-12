@@ -23,3 +23,10 @@ ENV/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+
+# Models & Data Outputs
+*.pkl
+data/eval_results_*.csv

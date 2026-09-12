@@ -95,7 +95,8 @@ def rule_based_fallback(text: str) -> InterpretedRequirement:
     operator = ">="
     if "more than" in text_lower or "greater than" in text_lower or "above than" in text_lower or "strictly higher" in text_lower or ">" in text_lower:
         operator = ">"
-    elif "less than" in text_lower or "below than" in text_lower or "smaller than" in text_lower or "<" in text_lower:
+    elif ("less than" in text_lower or "below than" in text_lower or "smaller than" in text_lower
+          or "under" in text_lower or "beneath" in text_lower or "<" in text_lower):
         operator = "<"
     elif "stay below" in text_lower or "not exceed" in text_lower or "at most" in text_lower or "<=" in text_lower:
         operator = "<="
@@ -166,10 +167,9 @@ def get_gemini_model() -> genai.GenerativeModel:
         )
     genai.configure(api_key=api_key)
     return genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+        model_name="gemini-2.5-flash",
         generation_config={
             "response_mime_type": "application/json",
-            "response_schema": InterpretedRequirement,
         },
     )
 
