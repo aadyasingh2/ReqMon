@@ -14,6 +14,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+from ramma_backend.model_adapter import ModelAdapter, get_model_adapter
 from ramma_nlp.explain import check_violation
 from ramma_nlp.schema import InterpretedRequirement
 
@@ -22,6 +23,7 @@ def generate_monitor_config(
     requirement: Union[InterpretedRequirement, Dict[str, Any]],
     calibrated_threshold: float | None = None,
     baseline_performance: float | None = None,
+    threshold_source: str | None = None,
     config_dir: str = "configs",
 ) -> Dict[str, Any]:
     """Generates a monitor configuration dictionary with dual thresholds (business & operational).
@@ -30,6 +32,7 @@ def generate_monitor_config(
         requirement: Dict or InterpretedRequirement specifying metric, operator, threshold, etc.
         calibrated_threshold: Optional empirical threshold from threshold calibration engine.
         baseline_performance: Optional empirical mean performance on reference baseline dataset.
+        threshold_source: Optional label for threshold origin ('calibrated', 'user_override', or 'business_requirement').
         config_dir: Directory where YAML config files are saved.
 
     Returns:
@@ -45,18 +48,27 @@ def generate_monitor_config(
 
     if calibrated_threshold is not None:
         op_threshold = float(calibrated_threshold)
+        src = threshold_source or "calibrated"
     else:
         op_threshold = biz_threshold
+        src = threshold_source or "business_requirement"
 
     # Evaluate whether reference baseline performance already satisfied the business requirement
     eval_perf = baseline_performance if baseline_performance is not None else op_threshold
     requirement_met_by_baseline = not check_violation(operator, biz_threshold, eval_perf)
+
+    if baseline_performance is not None:
+        base_perf = round(float(baseline_performance), 4)
+    else:
+        base_perf = round(op_threshold, 4)
 
     config = {
         "metric": str(req_dict.get("metric", "recall")),
         "operator": operator,
         "business_requirement_threshold": round(biz_threshold, 4),
         "operational_baseline_threshold": round(op_threshold, 4),
+        "baseline_performance": base_perf,
+        "threshold_source": src,
         "requirement_met_by_baseline": requirement_met_by_baseline,
         "severity": str(req_dict.get("severity", "medium")),
         "raw_requirement": str(req_dict.get("raw_requirement", "")),
@@ -71,6 +83,8 @@ metric: "{config['metric']}"
 operator: "{config['operator']}"
 business_requirement_threshold: {config['business_requirement_threshold']}
 operational_baseline_threshold: {config['operational_baseline_threshold']}
+baseline_performance: {config['baseline_performance']}
+threshold_source: "{config['threshold_source']}"
 requirement_met_by_baseline: {config['requirement_met_by_baseline']}
 severity: "{config['severity']}"
 raw_requirement: "{config['raw_requirement']}"
@@ -112,13 +126,16 @@ def compute_dataset_metric(
         raise ValueError(f"Unsupported metric: '{metric_name}'")
 
 
-def run_monitor(config: Dict[str, Any], production_df: pd.DataFrame, model_path: str) -> Dict[str, Any]:
+def run_monitor(
+    config: Dict[str, Any],
+    production_df: pd.DataFrame,
+    model_adapter: Union[str, ModelAdapter] = "models/baseline_classifier.pkl",
+) -> Dict[str, Any]:
     """Executes a monitoring check against production data evaluating dual threshold conditions."""
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at: {model_path}")
-
     if production_df.empty:
         raise ValueError("Production DataFrame is empty.")
+
+    adapter = get_model_adapter(model_adapter)
 
     target_col = None
     for col in ["is_fraud", "target", "label"]:
@@ -132,17 +149,14 @@ def run_monitor(config: Dict[str, Any], production_df: pd.DataFrame, model_path:
     X_prod = production_df.drop(columns=[target_col]).select_dtypes(include=[np.number])
     y_true = production_df[target_col]
 
-    clf = joblib.load(model_path)
-    y_pred = clf.predict(X_prod)
+    y_pred = adapter.predict(X_prod)
 
     y_proba = None
-    if hasattr(clf, "predict_proba"):
-        try:
-            probas = clf.predict_proba(X_prod)
-            if probas.shape[1] > 1:
-                y_proba = probas[:, 1]
-        except Exception:
-            pass
+    probas = adapter.predict_proba(X_prod)
+    if probas is not None and len(probas.shape) == 2 and probas.shape[1] > 1:
+        y_proba = probas[:, 1]
+    elif probas is not None and len(probas.shape) == 1:
+        y_proba = probas
 
     metric_name = config.get("metric", "recall")
     observed_value = compute_dataset_metric(y_true, y_pred, y_proba, metric_name)

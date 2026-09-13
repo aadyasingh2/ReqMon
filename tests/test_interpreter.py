@@ -5,7 +5,8 @@ import os
 from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
-from ramma_nlp.interpreter import app, interpret_requirement
+from ramma_backend.main import app
+from ramma_nlp.interpreter import interpret_requirement
 from ramma_nlp.schema import InterpretedRequirement
 
 client = TestClient(app)

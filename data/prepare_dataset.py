@@ -8,6 +8,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
@@ -117,6 +118,13 @@ def prepare_datasets_and_train_baseline():
     joblib.dump(clf, model_path)
     print(f"[3] Saved trained baseline model:        {model_path}")
 
+    # 3b. Train Alternative LogisticRegression Classifier on reference.csv
+    alt_clf = LogisticRegression(class_weight="balanced", random_state=42, max_iter=1000)
+    alt_clf.fit(X_train, y_train)
+    alt_model_path = "models/alt_classifier_logreg.pkl"
+    joblib.dump(alt_clf, alt_model_path)
+    print(f"[3b] Saved trained alternative model:    {alt_model_path}")
+
     # 4. Create production_drifted.csv by perturbing features and flipping labels
     prod_drifted_df = prod_clean_df.copy()
     n_prod = len(prod_drifted_df)
@@ -174,6 +182,8 @@ def prepare_datasets_and_train_baseline():
 
 
 if __name__ == "__main__":
-    import sys
-    sys.modules["data.prepare_dataset"] = sys.modules["__main__"]
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+    from data.prepare_dataset import prepare_datasets_and_train_baseline
     prepare_datasets_and_train_baseline()

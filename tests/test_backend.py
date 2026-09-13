@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from ramma_backend.database import Base, get_db
+from ramma_backend.main import app
 from ramma_backend.models import Alert, Monitor, Requirement
-from ramma_nlp.interpreter import app
 
 # In-memory SQLite engine using StaticPool for thread-safe test sharing
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -138,3 +138,68 @@ def test_database_models_relationships():
     assert monitor.alerts[0].observed_value == 0.91
 
     db.close()
+
+
+def test_cors_headers_on_api_endpoints():
+    """Confirms cross-origin requests receive appropriate Access-Control-Allow-Origin headers."""
+    origin = "http://localhost:5173"
+
+    # GET /requirements with Origin header
+    res_get = client.get("/requirements", headers={"Origin": origin})
+    assert res_get.status_code == 200
+    assert res_get.headers.get("access-control-allow-origin") == origin
+
+    # POST /interpret with Origin header
+    res_post = client.post("/interpret", json={"text": "Recall must remain above 93%"}, headers={"Origin": origin})
+    assert res_post.status_code == 200
+    assert res_post.headers.get("access-control-allow-origin") == origin
+
+    # OPTIONS preflight request
+    res_options = client.options(
+        "/interpret",
+        headers={
+            "Origin": origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert res_options.status_code == 200
+    assert res_options.headers.get("access-control-allow-origin") == origin
+
+
+def test_monitor_check_endpoint():
+    """Test POST /monitor/check endpoint for real pipeline execution on clean and drifted datasets."""
+    # 1. Clean dataset check (RandomForest recall PASS)
+    res_clean = client.post(
+        "/monitor/check",
+        json={
+            "requirement_text": "Recall must remain above 93%",
+            "model_source": "local:models/baseline_classifier.pkl",
+            "data_source": "clean",
+        },
+    )
+    assert res_clean.status_code == 200
+    data_clean = res_clean.json()
+
+    assert data_clean["observed_value"] >= 0.93
+    assert data_clean["business_requirement_violation"] is False
+    assert data_clean["operational_drift_violation"] is False
+
+    # 2. Drifted dataset check (RandomForest recall FAIL & DRIFT)
+    res_drifted = client.post(
+        "/monitor/check",
+        json={
+            "requirement_text": "Recall must remain above 93%",
+            "model_source": "local:models/baseline_classifier.pkl",
+            "data_source": "drifted",
+        },
+    )
+    assert res_drifted.status_code == 200
+    data_drifted = res_drifted.json()
+
+    assert data_drifted["observed_value"] < 0.90
+    assert data_drifted["business_requirement_violation"] is True
+    assert data_drifted["operational_drift_violation"] is True
+
+
+

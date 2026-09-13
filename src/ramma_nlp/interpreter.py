@@ -1,4 +1,4 @@
-"""Requirement Interpreter module using Gemini API with deterministic fallback and FastAPI."""
+"""Requirement Interpreter module using Gemini API with deterministic fallback."""
 
 import json
 import os
@@ -6,23 +6,9 @@ import re
 from typing import Any
 import google.generativeai as genai
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from ramma_nlp.schema import InterpretedRequirement
 
-from ramma_backend.database import init_db
-from ramma_backend.router import router as backend_router
-
 load_dotenv()
-
-# Initialize backend database tables
-init_db()
-
-app = FastAPI(
-    title="RAMMA NLP & Backend Service",
-    description="API for interpreting and persisting ML monitoring requirements.",
-)
-app.include_router(backend_router)
 
 SYSTEM_PROMPT = """You are an expert ML Monitoring Requirement Interpreter.
 Your task is to parse a natural-language requirement into a structured JSON object matching this schema:
@@ -66,10 +52,6 @@ Return ONLY valid JSON matching the specified schema.
 """
 
 
-class RequirementInput(BaseModel):
-    text: str
-
-
 def rule_based_fallback(text: str) -> InterpretedRequirement:
     """Deterministic regex rule-based parser fallback when API key is unavailable."""
     text_lower = text.lower()
@@ -95,11 +77,11 @@ def rule_based_fallback(text: str) -> InterpretedRequirement:
     operator = ">="
     if "more than" in text_lower or "greater than" in text_lower or "above than" in text_lower or "strictly higher" in text_lower or ">" in text_lower:
         operator = ">"
-    elif ("less than" in text_lower or "below than" in text_lower or "smaller than" in text_lower
+    elif "stay below" in text_lower or "remain below" in text_lower or "not exceed" in text_lower or "at most" in text_lower or "<=" in text_lower:
+        operator = "<="
+    elif ("less than" in text_lower or "below" in text_lower or "smaller than" in text_lower
           or "under" in text_lower or "beneath" in text_lower or "<" in text_lower):
         operator = "<"
-    elif "stay below" in text_lower or "not exceed" in text_lower or "at most" in text_lower or "<=" in text_lower:
-        operator = "<="
     elif "equal" in text_lower or "==" in text_lower:
         operator = "=="
     elif "above" in text_lower or "at least" in text_lower or "minimum of" in text_lower or ">=" in text_lower:
@@ -208,12 +190,6 @@ def interpret_requirement(text: str) -> InterpretedRequirement:
                 return rule_based_fallback(text)
 
 
-@app.post("/interpret", response_model=InterpretedRequirement)
-def interpret_endpoint(input_data: RequirementInput) -> InterpretedRequirement:
-    """FastAPI POST endpoint for interpreting monitoring requirements."""
-    try:
-        return interpret_requirement(input_data.text)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Interpretation error: {str(e)}"
-        ) from e
+
+
+

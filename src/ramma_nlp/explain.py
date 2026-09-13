@@ -44,13 +44,18 @@ def generate_llm_explanation(
     biz_thresh = config_dict.get("business_requirement_threshold", config_dict.get("threshold", 0.0))
     op_thresh = config_dict.get("operational_baseline_threshold", config_dict.get("threshold", 0.0))
     req_met = config_dict.get("requirement_met_by_baseline", False)
+    baseline_perf = config_dict.get("baseline_performance")
+    if baseline_perf is not None:
+        baseline_str = f"{float(baseline_perf):.2%}"
+    else:
+        baseline_str = f"{float(op_thresh):.2%}"
 
     explanations = []
     if biz_violation:
         if not req_met:
             explanations.append(
                 f"Business Requirement Not Met: {metric} observed value ({observed_value:.2%}) is below business requirement of {operator} {biz_thresh:.2%} "
-                f"(note: baseline model performance of ~63.90% never satisfied this target)."
+                f"(note: baseline model performance of ~{baseline_str} never satisfied this target)."
             )
         else:
             explanations.append(
